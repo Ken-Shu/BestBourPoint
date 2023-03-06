@@ -1,5 +1,4 @@
 import sqlite3
-import twstock
 
 def create_table():
     sql = '''
@@ -25,8 +24,6 @@ def create_table():
     conn.commit()
     conn.close()
 
-if __name__ == '__main__':
-    create_table()
 
 def find_all():
     sql = 'select * from bfp'
@@ -34,11 +31,14 @@ def find_all():
     cursor = conn.cursor()
     return cursor.execute(sql).fetchall()
 
+
 def find_one(symbol):
     sql = 'select * from bfp where symbol = ?'
     conn = sqlite3.connect("stock.db")
     cursor = conn.cursor()
     return cursor.execute(sql, [symbol]).fetchone()
+
+
 
 def append_record(symbol, best_buy_1, best_buy_2, best_buy_3, best_buy_4,best_sell_1, best_sell_2, best_sell_3, best_sell_4, transaction_time, price):
     sql = 'insert into bfp(symbol, best_buy_1, best_buy_2, best_buy_3, best_buy_4,best_sell_1, best_sell_2, best_sell_3, best_sell_4, transaction_time, price) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
@@ -54,12 +54,13 @@ def delete_record(symbol):
     sql = 'delete from bfp where symbol = ?'
     conn = sqlite3.connect("stock.db")
     cursor = conn.cursor()
-    cursor.execute(sql, [symbol])
-    print('刪除筆數: ', cursor.rowcount)
+    cursor = cursor.execute(sql, [symbol])
+    print('刪除筆數:', cursor.rowcount)
     conn.commit()
     conn.close()
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     # create_table()
     stocks = find_all()
     print(len(stocks), stocks)
@@ -68,7 +69,7 @@ if __name__=='__main__':
 
     prices = stock[11]
     prices = prices.strip('[').strip(']')
-    prices = prices.strip(', ')
+    prices = prices.split(', ')
     print(len(prices), prices)
 
     dates = stock[10]

@@ -1,12 +1,13 @@
+import uvicorn
 import time
 from io import BytesIO
 
-from PIL import Image, ImageFilter
+from PIL import ImageFilter, Image
 from starlette.responses import StreamingResponse
 
 from BFP_Service import get_one, query_all, add
 from fastapi import FastAPI
-from starlette.responses import FileResponse
+from fastapi.responses import FileResponse
 
 app = FastAPI()
 
@@ -19,7 +20,7 @@ def get_book_by_id(book_id: int):
 @app.get('/bfp/add/{symbol}')
 def add_stock_by_symbol(symbol: str):
     add(symbol)
-    stock= get_one(symbol)
+    stock = get_one(symbol)
     return stock
 
 @app.get('/bfp/get/{symbol}')
@@ -27,7 +28,7 @@ def get_stock_by_symbol(symbol: str):
     stock = get_one(symbol)
     return stock
 
-@app.get('/bfp/chart/{symbol}',response_class=FileResponse)
+@app.get('/bfp/chart/{symbol}', response_class=FileResponse)
 def get_chart_by_symbol(symbol: str):
     try:
         file = open(symbol + '.png', 'rb')
@@ -37,32 +38,28 @@ def get_chart_by_symbol(symbol: str):
         time.sleep(5)
         try:
             file = open(symbol + '.png', 'rb')
-        except FileNotFoundError as e :
+        except FileNotFoundError as e:
             return None
+
     try:
         original_image = Image.open(file)
-        '''
-        BLUR 模糊
-        CONTOUR 輪廓
-        DETAIL 細節
-        EDGE_ENHANCE 邊緣增強
-        EDGE_ENHANCE_MORE EDGE_ENHANCE_更多
-        EMBOSS 浮雕
-        FIND_EDGES 尋找邊緣
-        SHARPEN 銳化
-        SMOOTH 光滑的
-        SMOOTH_MORE 平滑_更多
-        '''
-        # original_image = original_image.filter(ImageFilter.BLUR) 模糊處理
+        #original_image = original_image.filter(ImageFilter.BLUR)  # 模糊處理
+        original_image = original_image.filter(ImageFilter.UnsharpMask)  # 銳利處理
 
         filtered_image = BytesIO()
         original_image.save(filtered_image, "PNG")
         filtered_image.seek(0)
 
-        return StreamingResponse(filtered_image, media_type="image/jpeg")
+        return StreamingResponse(filtered_image, media_type="image/png")
     except KeyError as e:
         return None
+
 @app.get('/bfp/query/all')
-def all():
+def qyery_stocks():
     return query_all()
+
+
+if __name__ == '__main__':
+    # uvicorn.run('api:app')
+    uvicorn.run("api:app", host="0.0.0.0", port=8000, log_level="info")
 
