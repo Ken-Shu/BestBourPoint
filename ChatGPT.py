@@ -1,7 +1,7 @@
 import requests
 import json
 
-api_key = "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"
+api_key = ""
 url = "https://api.openai.com/v1/completions"
 
 def getmessage(keyword):
